@@ -1,16 +1,31 @@
 import random
+import pickle
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from os.path import isfile
 from tqdm import tqdm
 from lap import lapjv
+from PIL import Image as pil_image
+from scipy.ndimage import affine_transform
 
 K = tf.keras.backend
 Sequence = tf.keras.utils.Sequence
+img_to_array = tf.keras.preprocessing.image.img_to_array
 
 img_shape = (384, 384, 1)  # The image shape used by the model
 anisotropy = 2.15  # The horizontal compression ratio
 crop_margin = 0.05  # The margin added around the bounding box to compensate for bounding box inaccuracy
+TRAIN = '/home/data/whale/train/'
+TEST = '/home/data/whale/test/'
+
+def expand_path(p):
+    if isfile(TRAIN + p):
+        return TRAIN + p
+    if isfile(TEST + p):
+        return TEST + p
+    return p
+
 
 def build_transform(rotation, shear, height_zoom, width_zoom, height_shift, width_shift):
     """
@@ -35,16 +50,8 @@ def read_cropped_image(p, augment):
     """
     # If an image id was given, convert to filename
     p2size_pth = '/home/data/whale/metadata/p2size.pickle'
-    p2h_path = '/home/data/whale/metadata/p2h.pickle'
-
     with open(p2size_pth, 'rb') as f:
         p2size = pickle.load(f)
-
-    with open(p2h_path, 'rb') as f:
-        p2h = pickle.load(f)
-
-    if p in h2p:
-        p = h2p[p]
     size_x, size_y = p2size[p]
 
     # Determine the region of the original image we want to capture based on the bounding box.
@@ -91,7 +98,7 @@ def read_cropped_image(p, augment):
     trans = np.dot(np.array([[1, 0, 0.5 * (y1 + y0)], [0, 1, 0.5 * (x1 + x0)], [0, 0, 1]]), trans)
 
     # Read the image, transform to black and white and comvert to numpy array
-    img = read_raw_image(p).convert('L')
+    img = pil_image.open(expand_path(p)).convert('L')
     img = img_to_array(img)
 
     # Apply affine transformation
@@ -258,11 +265,11 @@ class TrainingData(Sequence):
         return (len(self.match) + len(self.unmatch) + self.batch_size - 1) // self.batch_size
 
 
-def main():
-    with open('./annex/w2ts.pickle', 'rb') as f:
-        w2ts = pickle.load(f)
-    train = np.load('./annex/train_id.npy')
-    # Test on a batch of 32 with random costs.
-    score = np.random.random_sample(size=(len(train), len(train)))
-    data = TrainingData(train, score)
-    (a, b), c = data[0]
+# def main():
+#     with open('./annex/w2ts.pickle', 'rb') as f:
+#         w2ts = pickle.load(f)
+#     train = np.load('./annex/train_id.npy')
+#     # Test on a batch of 32 with random costs.
+#     score = np.random.random_sample(size=(len(train), len(train)))
+#     data = TrainingData(train, w2ts, score)
+#     (a, b), c = data[0]
