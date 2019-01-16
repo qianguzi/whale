@@ -13,11 +13,13 @@ K = tf.keras.backend
 Sequence = tf.keras.utils.Sequence
 img_to_array = tf.keras.preprocessing.image.img_to_array
 
-img_shape = (384, 384, 1)  # The image shape used by the model
+img_shape = (64, 64, 1)  # The image shape used by the model
 anisotropy = 2.15  # The horizontal compression ratio
 crop_margin = 0.05  # The margin added around the bounding box to compensate for bounding box inaccuracy
 TRAIN = '/mnt/hdd/hdd1/home/LiaoL/Kaggle/Whale/dataset/train/'
 TEST = '/mnt/hdd/hdd1/home/LiaoL/Kaggle/Whale/dataset/test/'
+# TRAIN = '/home/data/whale/train/'
+# TEST = '/home/data/whale/test/'
 
 def expand_path(p):
     if isfile(TRAIN + p):
@@ -50,8 +52,14 @@ def read_cropped_image(p, augment):
     """
     # If an image id was given, convert to filename
     p2size_pth = './annex/p2size.pickle'
+    h2p_path = './annex/h2p.pickle'
     with open(p2size_pth, 'rb') as f:
         p2size = pickle.load(f)
+    with open(h2p_path, 'rb') as f:
+        h2p = pickle.load(f)
+    
+    if p in h2p:
+        p = h2p[p]
     size_x, size_y = p2size[p]
 
     # Determine the region of the original image we want to capture based on the bounding box.

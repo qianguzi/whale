@@ -19,8 +19,8 @@ def prefer_pic(ps, p2size):
     return best_p
 
 def data_cleaning():
-  p2size_pth = '/home/data/whale/metadata/p2size.pickle'
-  p2h_path = '/home/data/whale/metadata/p2h.pickle'
+  p2size_pth = './annex/p2size.pickle'
+  p2h_path = './annex/p2h.pickle'
   tagged = dict([(p, w) for _, p, w in pd.read_csv('/home/data/whale/train.csv').to_records()])
 
   with open(p2size_pth, 'rb') as f:
@@ -37,6 +37,9 @@ def data_cleaning():
   h2p = {}
   for h, ps in h2ps.items():
     h2p[h] = prefer_pic(ps, p2size)
+
+  with open('./annex/h2p.pickle', 'wb') as f:
+    pickle.dump(h2p, f)
 
   h2ws = {}
   for p, w in tagged.items():

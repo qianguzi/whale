@@ -8,7 +8,7 @@ optimizers = tf.keras.optimizers
 regularizers = tf.keras.regularizers
 Input = tf.keras.Input
 
-img_shape = (384, 384, 1)  # The image shape used by the model
+img_shape = (64, 64, 1)  # The image shape used by the model
 
 def subblock(x, filter, **kwargs):
     x = layers.BatchNormalization()(x)
@@ -100,5 +100,7 @@ def build_model(lr, l2, activation='sigmoid'):
     xb = branch_model(img_b)
     x = head_model([xa, xb])
     model = Model([img_a, img_b], x)
+    # branch_model.compile()
+    # head_model.compile()
     model.compile(optim, loss='binary_crossentropy', metrics=['binary_crossentropy', 'acc'])
     return model, branch_model, head_model
