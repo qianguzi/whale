@@ -9,6 +9,8 @@ from dataset import data_generator
 
 K = tf.keras.backend
 
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+
 def set_lr(model, lr):
     K.set_value(model.optimizer.lr, float(lr))
 
@@ -41,6 +43,12 @@ def score_reshape(score, x, y=None):
 
 
 def main():
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth=True
+    sess = tf.Session(config=config)
+
+    # set session
+    K.tensorflow_backend.set_session(sess)
     train_model, branch_model, head_model = model.build_model(64e-5, 0.00004)
     with open('./annex/w2ts.pickle', 'rb') as f:
         w2ts = pickle.load(f)

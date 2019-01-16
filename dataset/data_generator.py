@@ -16,8 +16,8 @@ img_to_array = tf.keras.preprocessing.image.img_to_array
 img_shape = (384, 384, 1)  # The image shape used by the model
 anisotropy = 2.15  # The horizontal compression ratio
 crop_margin = 0.05  # The margin added around the bounding box to compensate for bounding box inaccuracy
-TRAIN = '/home/data/whale/train/'
-TEST = '/home/data/whale/test/'
+TRAIN = '/mnt/hdd/hdd1/home/LiaoL/Kaggle/Whale/dataset/train/'
+TEST = '/mnt/hdd/hdd1/home/LiaoL/Kaggle/Whale/dataset/test/'
 
 def expand_path(p):
     if isfile(TRAIN + p):
@@ -49,13 +49,13 @@ def read_cropped_image(p, augment):
     @return a numpy array with the transformed image
     """
     # If an image id was given, convert to filename
-    p2size_pth = '/home/data/whale/metadata/p2size.pickle'
+    p2size_pth = './annex/p2size.pickle'
     with open(p2size_pth, 'rb') as f:
         p2size = pickle.load(f)
     size_x, size_y = p2size[p]
 
     # Determine the region of the original image we want to capture based on the bounding box.
-    p2bb = pd.read_csv('/home/data/whale//metadata/bounding_boxes.csv').set_index("Image")
+    p2bb = pd.read_csv('./annex/bounding_boxes.csv').set_index("Image")
     row = p2bb.loc[p]
     x0, y0, x1, y1 = row['x0'], row['y0'], row['x1'], row['y1']
     dx = x1 - x0
