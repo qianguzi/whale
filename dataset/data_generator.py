@@ -13,7 +13,7 @@ K = tf.keras.backend
 Sequence = tf.keras.utils.Sequence
 img_to_array = tf.keras.preprocessing.image.img_to_array
 
-img_shape = (64, 64, 1)  # The image shape used by the model
+img_shape = (256, 256, 1)  # The image shape used by the model
 anisotropy = 2.15  # The horizontal compression ratio
 crop_margin = 0.05  # The margin added around the bounding box to compensate for bounding box inaccuracy
 TRAIN = '/mnt/home/hdd/hdd1/home/LiaoL/Kaggle/Whale/dataset/train/'
