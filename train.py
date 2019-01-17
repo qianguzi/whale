@@ -74,19 +74,17 @@ def main():
             score = score_reshape(score, features)
         except:
             score = np.zeros((len(train), len(train)))
-
-        check_cb = tf.keras.callbacks.ModelCheckpoint('./.checkpoints', monitor='loss', verbose=1)
+        # score = np.zeros((len(train), len(train)))
+        check_cb = tf.keras.callbacks.ModelCheckpoint('./.checkpoints/model_{epoch:02d}-{loss:.2f}.hdf5', monitor='loss', verbose=1)
         def schedule(epoch):
             return 64e-5 * (0.98 ** epoch)
         lr_cb = tf.keras.callbacks.LearningRateScheduler(schedule, verbose=1)
-        board_cb = tf.keras.callbacks.TensorBoard(log_dir='./.logs', histogram_freq=0, write_graph=True,
-                                                  write_images=False, embeddings_freq=0,
-                                                  embeddings_layer_names=None, embeddings_metadata=None)
+        board_cb = tf.keras.callbacks.TensorBoard(log_dir='./.logs', write_graph=True)
         # Train the model for 'step' epochs
         history = train_model.fit_generator(
             data_generator.TrainingData(train, w2ts,
                                         score + ampl * np.random.random_sample(size=score.shape), 
-                                        steps=step, batch_size=32),
+                                        steps=step, batch_size=64),
             initial_epoch=global_steps, epochs=global_steps + step, 
             callbacks=[check_cb, lr_cb, board_cb],
             max_queue_size=12, workers=6, verbose=1).history
@@ -97,6 +95,8 @@ def main():
         history['ms'] = np.mean(score)
         history['lr'] = get_lr(train_model)
         print(history['epochs'], history['lr'], history['ms'])
+        with open('./.logs/history_%02d.pickle'%(global_steps), 'wb') as f:
+            pickle.dump(history, f)
         histories.append(history)
         return global_steps
 
@@ -105,7 +105,7 @@ def main():
         train_model.set_weights(tmp.get_weights())
     else:
         # epoch -> 10
-        global_steps = make_steps(global_steps, 10, 1000)
+        global_steps = make_steps(global_steps, 1, 1000)
         ampl = 100.0
         for _ in range(2):
             print('noise ampl.  = ', ampl)
