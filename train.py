@@ -11,7 +11,7 @@ K = tf.keras.backend
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
-def # set_lr(model, lr):
+def set_lr(model, lr):
     K.set_value(model.optimizer.lr, float(lr))
 
 
