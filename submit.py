@@ -1,3 +1,4 @@
+import os
 import time
 import pickle
 import numpy as np
@@ -9,6 +10,8 @@ import model
 from train import score_reshape
 from dataset import data_generator
 
+K = tf.keras.backend
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 def prepare_submission(threshold, submit, score, known, h2ws, filename):
     """
@@ -50,10 +53,18 @@ def prepare_submission(threshold, submit, score, known, h2ws, filename):
 
 
 def main():
+  config = tf.ConfigProto()
+  config.gpu_options.allow_growth=True
+  sess = tf.Session(config=config)
+
+  # set session
+  K.set_session(sess)
   # Find elements from training sets not 'new_whale'
   tic = time.time()
-  train_df = '/home/data/whale/train.csv'
-  sub_df = '/home/data/whale/sample_submission.csv'
+  # train_df = '/home/data/whale/train.csv'
+  # sub_df = '/home/data/whale/sample_submission.csv'
+  train_df = '/mnt/home/hdd/hdd1/home/LiaoL/Kaggle/Whale/dataset/train.csv'
+  sub_df = '/mnt/home/hdd/hdd1/home/LiaoL/Kaggle/Whale/dataset/sample_submission.csv'
   tagged = dict([(p, w) for _, p, w in read_csv(train_df).to_records()])
   submit = [p for _, p, _ in read_csv(sub_df).to_records()]
 
@@ -72,7 +83,7 @@ def main():
   for i, h in enumerate(known): h2i[h] = i
   # Build model and load model weight
   train_model, branch_model, head_model = model.build_model(64e-5, 0.00004)
-  tmp = tf.keras.models.load_model('./annex/mpiotte-standard.model')
+  tmp = tf.keras.models.load_model('./.checkpoints/model_20-0.63.hdf5')
   train_model.set_weights(tmp.get_weights())
   # Evaluate the model.
   fknown = branch_model.predict_generator(data_generator.FeatureGen(known), max_queue_size=20, workers=10, verbose=0)
@@ -84,3 +95,7 @@ def main():
   prepare_submission(0.99, submit, score, known, h2ws, 'submission.csv')
   toc = time.time()
   print("Submission time: ", (toc - tic) / 60.)
+
+
+if __name__ == '__main__':
+    main()
