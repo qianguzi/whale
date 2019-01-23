@@ -36,9 +36,9 @@ def score_reshape(score, x, y=None):
 
 def train_model():
   tf.logging.set_verbosity(tf.logging.INFO)
-  with open('./annex/w2ts.pickle', 'rb') as f:
+  with open('../annex/w2ts.pickle', 'rb') as f:
         w2ts = pickle.load(f)
-  train_id = np.load('./annex/train_id.npy')
+  train_id = np.load('../annex/train_id.npy')
   inputs_a = tf.placeholder(tf.float32, [None, 384, 384, 1], name='input_a')
   inputs_b = tf.placeholder(tf.float32, [None, 384, 384, 1], name='input_b')
   inputs_c = tf.placeholder(tf.float32, [None, 512], name='input_c')
