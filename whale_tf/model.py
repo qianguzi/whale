@@ -6,7 +6,7 @@ def _botterneck(inputs, depth, scope=None):
   with tf.variable_scope(scope, 'botterneck', [inputs]):
     net = slim.conv2d(inputs, depth, (1, 1), scope='conv1')
     net = slim.conv2d(net, depth, (3, 3), scope='conv2')
-    net = slim.conv2d(net, tf.shape(inputs)[-1], (1, 1), scope='conv3')
+    net = slim.conv2d(net, inputs.shape[-1], (1, 1), scope='conv3')
     net = tf.nn.relu(inputs + net, name='shortcut')
     return net
     
@@ -48,7 +48,8 @@ def branch_model(inputs, reuse=None, scope=None):
     net = _sub_block(net, 4, 64, 384)
     net = _sub_block(net, 4, 96, 512)
     net = _sub_block(net, 4, 128, apply_maxpool=False)
-    outputs = global_pool(net, pool_op=slim.max_pool2d)
+    outputs = global_pool(net, pool_op=tf.nn.max_pool)
+    outputs = tf.squeeze(outputs, axis=[1, 2], name='output')
     return outputs
 
 
@@ -56,6 +57,8 @@ def head_model(inputs_a, inputs_b, reuse=None, scope=None):
   with tf.variable_scope(scope, 'Siamese_head', reuse=reuse):
     inputs_a = tf.identity(inputs_a, 'input_a')
     inputs_b = tf.identity(inputs_b, 'input_b')
+    inputs_a = tf.expand_dims(inputs_a, 1)
+    inputs_b = tf.expand_dims(inputs_b, 1)
     rela_1 = tf.multiply(inputs_a, inputs_b, name='relation_1')
     rela_2 = tf.add(inputs_a, inputs_b, name='relation_2')
     rela_3 = tf.abs(rela_1 - rela_2, name='relation_3')
@@ -64,9 +67,11 @@ def head_model(inputs_a, inputs_b, reuse=None, scope=None):
     net = tf.expand_dims(rela, -1) # (B, 4, 512, 1)
     net = slim.conv2d(net, 32, (4, 1), padding='VALID', scope='conv1') # (B, 1, 512, 32)
     net = tf.transpose(net, [0, 2, 3, 1]) # (B, 512, 32, 1)
-    net = slim.conv2d(net, 1, (1, 32), activation_fn=slim.linear, padding='VALID', scope='conv2') # (B, 512, 1, 1)
+    net = slim.conv2d(net, 1, (1, 32), activation_fn=None, padding='VALID', scope='conv2') # (B, 512, 1, 1)
     net = tf.transpose(net, [0, 2, 3, 1]) # (B, 1, 1, 512)
-    outputs = slim.conv2d(net, 1, (1, 1), activation_fn=None, normalizer_fn=None, scope='fully_connected')
+    outputs = slim.conv2d(net, 1, (1, 1), activation_fn=None,
+                          normalizer_fn=None, padding='VALID', scope='fully_connected')
+    outputs = tf.squeeze(outputs, axis=[1, 2], name='logits')
     return outputs
 
 # pylint: disable=E1129

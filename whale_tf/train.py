@@ -36,9 +36,9 @@ def score_reshape(score, x, y=None):
 
 def train_model():
   tf.logging.set_verbosity(tf.logging.INFO)
-  with open('../annex/w2ts.pickle', 'rb') as f:
+  with open('./annex/w2ts.pickle', 'rb') as f:
         w2ts = pickle.load(f)
-  train_id = np.load('../annex/train_id.npy')
+  train_id = np.load('./annex/train_id.npy')
   inputs_a = tf.placeholder(tf.float32, [None, 384, 384, 1], name='input_a')
   inputs_b = tf.placeholder(tf.float32, [None, 384, 384, 1], name='input_b')
   inputs_c = tf.placeholder(tf.float32, [None, 512], name='input_c')
@@ -47,9 +47,9 @@ def train_model():
   with slim.arg_scope(model.train_arg_scope(weight_decay=0.0001)): # pylint: disable=E1129
     outputs_a = model.branch_model(inputs_a, scope='Siamese_branch')
     outputs_b = model.branch_model(inputs_b, reuse=True, scope='Siamese_branch')
-  outputs = model.head_model(outputs_a, outputs_b)
-  outputs_head = model.head_model(inputs_c, inputs_d, reuse=True)
-  cls_loss = slim.losses.sigmoid_cross_entropy(outputs, labels)
+  outputs = model.head_model(outputs_a, outputs_b, scope='Siamese_head')
+  outputs_head = model.head_model(inputs_c, inputs_d, reuse=True, scope='Siamese_head')
+  cls_loss = tf.losses.sigmoid_cross_entropy(outputs, labels)
   predictions = tf.where(outputs >= 0.5, tf.ones_like(outputs), tf.zeros_like(outputs))
   acc = tf.metrics.accuracy(labels, predictions)
   # Gather update_ops
