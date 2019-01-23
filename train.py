@@ -44,7 +44,7 @@ def score_reshape(score, x, y=None):
 
 def main():
     config = tf.ConfigProto()
-    config.gpu_options.allow_growth=True
+    config.gpu_options.allow_growth = True # pylint: disable=E1101
     sess = tf.Session(config=config)
 
     # set session
@@ -105,7 +105,7 @@ def main():
         train_model.set_weights(tmp.get_weights())
     else:
         # epoch -> 10
-        global_steps = make_steps(global_steps, 1, 1000)
+        global_steps = make_steps(global_steps, 5, 1000)
         ampl = 100.0
         for _ in range(2):
             print('noise ampl.  = ', ampl)

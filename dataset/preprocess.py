@@ -81,11 +81,16 @@ def data_cleaning():
   return train, w2ts
 
 if __name__ == '__main__':
-  train, w2ts = data_cleaning()
-  np.save('./annex/train_id.npy', train)
-  with open('./annex/w2ts.pickle', 'wb') as f:
-    pickle.dump(w2ts, f)
-  with open('./annex/w2ts.pickle', 'rb') as f:
-    w2ts1 = pickle.load(f)
-  train1 = np.load('./annex/train_id.npy')
-  print('Successful!')
+  # train, w2ts = data_cleaning()
+  # np.save('./annex/train_id.npy', train)
+  # with open('./annex/w2ts.pickle', 'wb') as f:
+  #   pickle.dump(w2ts, f)
+  # with open('./annex/w2ts.pickle', 'rb') as f:
+  #   w2ts1 = pickle.load(f)
+  # train1 = np.load('./annex/train_id.npy')
+  # print('Successful!')
+    with open('./.logs/history_01.pickle', 'rb') as f:
+        h_1 = pickle.load(f)
+    with open('./.logs/history_06.pickle', 'rb') as f:
+        h_6 = pickle.load(f)
+    print('ss')
