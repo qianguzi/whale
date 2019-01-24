@@ -1,3 +1,4 @@
+import time
 import random
 import pickle
 import numpy as np
@@ -212,8 +213,7 @@ class TrainingData(Sequence):
             idxs = [t2i[t] for t in ts]
             for i in idxs:
                 for j in idxs:
-                    self.score[
-                        i, j] = 10000.0  # Set a large value for matching whales -- eliminates this potential pairing
+                    self.score[i, j] = 10000.0 
         self.on_epoch_end()
 
     def __getitem__(self, index):
@@ -240,7 +240,9 @@ class TrainingData(Sequence):
         self.steps -= 1
         self.match = []
         self.unmatch = []
+        start_time = time.time()
         _, _, x = lapjv(self.score)  # Solve the linear assignment problem
+        print(time.time() - start_time)
         y = np.arange(len(x), dtype=np.int32)
 
         # Compute a derangement for matching whales

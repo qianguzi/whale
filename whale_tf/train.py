@@ -37,7 +37,7 @@ def score_reshape(score, x, y=None):
 def train_model():
   tf.logging.set_verbosity(tf.logging.INFO)
   with open('../annex/w2ts.pickle', 'rb') as f:
-        w2ts = pickle.load(f)
+    w2ts = pickle.load(f)
   train_id = np.load('../annex/train_id.npy')
   inputs_a = tf.placeholder(tf.float32, [None, 384, 384, 1], name='input_a')
   inputs_b = tf.placeholder(tf.float32, [None, 384, 384, 1], name='input_b')
@@ -102,12 +102,15 @@ def train_model():
         features.append(feature)
       features = np.concatenate(features, 0)
       data_eval = data_generator.ScoreGen(features, batch_size=2048, verbose=1)
+
       scores = []
       for batch_id in range(len(data_eval)):
-        score = sess.run(outputs_head, feed_dict={inputs_c: data_eval[0], inputs_d: data_eval[1]})
+        score = sess.run(outputs_head, feed_dict={inputs_c: data_eval[batch_id][0],
+                                                  inputs_d: data_eval[batch_id][1]})
         scores.append(score)
       scores = np.concatenate(scores, 0)
       scores = score_reshape(scores, features)
+      print(scores.shape)
       data_train = data_generator.TrainingData(
                        train_id, w2ts,
                        scores + ampl * np.random.random_sample(size=scores.shape), 
@@ -117,7 +120,8 @@ def train_model():
         print('epoch[%02d]'%(epoch_id + 1))
         for batch_id in range(len(data_train)):
           feed_dict = {inputs_a: data_train[batch_id][0][0],
-                       inputs_b: data_train[batch_id][0][1]}
+                       inputs_b: data_train[batch_id][0][1],
+                       labels: data_train[batch_id][1]}
           _, _total_loss, _cls_loss, _summ, _global_step, _acc = sess.run(
               [train_tensor, total_loss, cls_loss, summary_op, global_step, acc], feed_dict)
           if min_loss > _cls_loss:
