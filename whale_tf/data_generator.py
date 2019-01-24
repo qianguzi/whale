@@ -241,8 +241,9 @@ class TrainingData(Sequence):
         self.match = []
         self.unmatch = []
         start_time = time.time()
+        print('----lapjv start----')
         _, _, x = lapjv(self.score)  # Solve the linear assignment problem
-        print(time.time() - start_time)
+        print('Time cost: ', time.time() - start_time)
         y = np.arange(len(x), dtype=np.int32)
 
         # Compute a derangement for matching whales
@@ -273,13 +274,3 @@ class TrainingData(Sequence):
 
     def __len__(self):
         return (len(self.match) + len(self.unmatch) + self.batch_size - 1) // self.batch_size
-
-
-# def main():
-#     with open('./annex/w2ts.pickle', 'rb') as f:
-#         w2ts = pickle.load(f)
-#     train = np.load('./annex/train_id.npy')
-#     # Test on a batch of 32 with random costs.
-#     score = np.random.random_sample(size=(len(train), len(train)))
-#     data = TrainingData(train, w2ts, score)
-#     (a, b), c = data[0]

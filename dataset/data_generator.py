@@ -1,3 +1,4 @@
+import time
 import random
 import pickle
 import numpy as np
@@ -240,7 +241,10 @@ class TrainingData(Sequence):
         self.steps -= 1
         self.match = []
         self.unmatch = []
+        start_time = time.time()
+        print('----lapjv start----')
         _, _, x = lapjv(self.score)  # Solve the linear assignment problem
+        print('Time cost: ', time.time() - start_time)
         y = np.arange(len(x), dtype=np.int32)
 
         # Compute a derangement for matching whales

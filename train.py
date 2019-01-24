@@ -75,7 +75,7 @@ def main():
         except:
             score = np.zeros((len(train), len(train)))
         # score = np.zeros((len(train), len(train)))
-        check_cb = tf.keras.callbacks.ModelCheckpoint('./.checkpoints/model_{epoch:02d}-{loss:.2f}.hdf5', monitor='loss', verbose=1)
+        # check_cb = tf.keras.callbacks.ModelCheckpoint('./.checkpoints/model_{epoch:02d}-{loss:.2f}.hdf5', monitor='loss', verbose=1)
         def schedule(epoch):
             return 64e-5 * (0.98 ** epoch)
         lr_cb = tf.keras.callbacks.LearningRateScheduler(schedule, verbose=1)
@@ -86,7 +86,7 @@ def main():
                                         score + ampl * np.random.random_sample(size=score.shape), 
                                         steps=step, batch_size=64),
             initial_epoch=global_steps, epochs=global_steps + step, 
-            callbacks=[check_cb, lr_cb, board_cb],
+            callbacks=[lr_cb, board_cb],
             max_queue_size=12, workers=6, verbose=1).history
         global_steps += step
 
@@ -104,29 +104,23 @@ def main():
         tmp = tf.keras.models.load_model('./annex/standard.model')
         train_model.set_weights(tmp.get_weights())
     else:
-        # epoch -> 10
-        global_steps = make_steps(global_steps, 5, 1000)
+        global_steps = make_steps(global_steps, 10, 1000)
+        train_model.save('standard-%03d.model'%(global_steps))
         ampl = 100.0
-        for _ in range(2):
+        for _ in range(4):
             print('noise ampl.  = ', ampl)
             global_steps = make_steps(global_steps, 5, ampl)
+            train_model.save('standard-%03d.model'%(global_steps))
             ampl = max(1.0, 100 ** -0.1 * ampl)
-        # epoch -> 150
-        for _ in range(4): 
+        for _ in range(18): 
             global_steps = make_steps(global_steps, 5, 1.0)
-        # epoch -> 200
-        # set_lr(model, 16e-5)
-        for _ in range(4): 
+            train_model.save('standard-%03d.model'%(global_steps))
+        for _ in range(10): 
             global_steps = make_steps(global_steps, 5, 0.5)
-        # epoch -> 240
-        # set_lr(model, 4e-5)
+            train_model.save('standard-%03d.model'%(global_steps))
         for _ in range(8): 
             global_steps = make_steps(global_steps, 5, 0.25)
-        # epoch -> 250
-        # set_lr(model, 1e-5)
-        # for _ in range(2): 
-        #     global_steps = make_steps(global_steps, 5, 0.25)
-        # epoch -> 300
+            train_model.save('standard-%03d.model'%(global_steps))
         # weights = train_model.get_weights()
         # train_model, branch_model, head_model = model.build_model(64e-5, 0.0002)
         # train_model.set_weights(weights)

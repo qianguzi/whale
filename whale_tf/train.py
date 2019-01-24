@@ -47,11 +47,11 @@ def train_model():
   with slim.arg_scope(model.train_arg_scope(weight_decay=0.0001)): # pylint: disable=E1129
     outputs_a = model.branch_model(inputs_a, scope='Siamese_branch')
     outputs_b = model.branch_model(inputs_b, reuse=True, scope='Siamese_branch')
-  outputs = model.head_model(outputs_a, outputs_b, scope='Siamese_head')
-  outputs_head = model.head_model(inputs_c, inputs_d, reuse=True, scope='Siamese_head')
-  cls_loss = tf.losses.sigmoid_cross_entropy(outputs, labels)
-  predictions = tf.where(outputs >= 0.5, tf.ones_like(outputs), tf.zeros_like(outputs))
-  acc = tf.metrics.accuracy(labels, predictions)
+  outputs, predictions = model.head_model(outputs_a, outputs_b, scope='Siamese_head')
+  _, predictions_head = model.head_model(inputs_c, inputs_d, reuse=True, scope='Siamese_head')
+  cls_loss = tf.losses.sigmoid_cross_entropy(labels, outputs)
+  predictions = tf.where(predictions >= 0.5, tf.ones_like(predictions), tf.zeros_like(predictions))
+  acc = tf.add_n(tf.cast(tf.equal(labels, predictions), tf.float32)) / tf.cast(labels.shape[0], tf.float32)
   # Gather update_ops
   update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
   # Gather initial summaries.
@@ -105,8 +105,8 @@ def train_model():
 
       scores = []
       for batch_id in range(len(data_eval)):
-        score = sess.run(outputs_head, feed_dict={inputs_c: data_eval[batch_id][0],
-                                                  inputs_d: data_eval[batch_id][1]})
+        score = sess.run(predictions_head, feed_dict={inputs_c: data_eval[batch_id][0],
+                                                      inputs_d: data_eval[batch_id][1]})
         scores.append(score)
       scores = np.concatenate(scores, 0)
       scores = score_reshape(scores, features)
@@ -139,7 +139,7 @@ def train_model():
       return initial_epoch + epochs
 
     current_epoch = make_steps(0, 10, 1000)
-    for _ in range(2):
+    for _ in range(4):
       current_epoch = make_steps(current_epoch, 5, 100)
     for _ in range(18):
       current_epoch = make_steps(current_epoch, 5, 1.0)

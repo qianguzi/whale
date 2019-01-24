@@ -72,7 +72,8 @@ def head_model(inputs_a, inputs_b, reuse=None, scope=None):
     outputs = slim.conv2d(net, 1, (1, 1), activation_fn=None,
                           normalizer_fn=None, padding='VALID', scope='fully_connected')
     outputs = tf.squeeze(outputs, axis=[1, 2], name='logits')
-    return outputs
+    predictions = tf.nn.sigmoid(outputs, name='predictions')
+    return outputs, predictions
 
 # pylint: disable=E1129
 def train_arg_scope(weight_decay=0.0001,
